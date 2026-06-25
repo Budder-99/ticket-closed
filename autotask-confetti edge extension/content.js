@@ -10,7 +10,8 @@
     sizeMultiplier: 1.0,
     durationMs: 2000,
     colorMode: "classic",   // "classic" | "pink" | "company"
-    originMode: "corners"   // "corners" | "bottomCorners"
+    originMode: "corners",   // "corners" | "bottomCorners"
+    velocitySpreadMultiplier: 1.0
   };
 
   const settings = { ...settingsDefaults };
@@ -24,6 +25,7 @@
       settings.durationMs = items.durationMs;
       settings.colorMode = items.colorMode;
       settings.originMode = items.originMode;
+      settings.velocitySpreadMultiplier = items.velocitySpreadMultiplier;
       console.log("Autotask Confetti settings loaded", settings);
     });
   }
@@ -50,6 +52,9 @@
       }
       if (changes.originMode) {
         settings.originMode = changes.originMode.newValue;
+      }
+      if (changes.velocitySpreadMultiplier) {
+        settings.velocitySpreadMultiplier = changes.velocitySpreadMultiplier.newValue;
       }
       console.log("Autotask Confetti settings updated", settings);
     });
@@ -80,35 +85,31 @@
   }
 
   function makePiece() {
-  const el = document.createElement("div");
-  const baseSize = 6 + Math.random() * 8;
-  const factor = settings.sizeMultiplier || 1.0;
-  const size = baseSize * factor;
-  const palette = getColors();
+    const el = document.createElement("div");
+    const baseSize = 6 + Math.random() * 8;
+    const factor = settings.sizeMultiplier || 1.0;
+    const size = baseSize * factor;
+    const palette = getColors();
+    const color = palette[(Math.random() * palette.length) | 0];
 
-  const color = palette[(Math.random() * palette.length) | 0];
+    el.style.cssText = `
+      position: fixed;
+      left: 0;
+      top: 0;
+      width: ${size}px;
+      height: ${size * (0.6 + Math.random() * 0.8)}px;
+      background: ${color};
+      z-index: 2147483647;
+      pointer-events: none;
+      opacity: 1;
+      border-radius: ${Math.random() > 0.5 ? "50%" : "2px"};
+      will-change: transform, left, top;
+      box-shadow: 0 0 14px ${color};
+    `;
+    document.body.appendChild(el);
+    return el;
+  }
 
-  el.style.cssText = `
-    position: fixed;
-    left: 0;
-    top: 0;
-    width: ${size}px;
-    height: ${size * (0.6 + Math.random() * 0.8)}px;
-    background: ${color};
-    z-index: 2147483647;
-    pointer-events: none;
-    opacity: 1;
-    border-radius: ${Math.random() > 0.5 ? "50%" : "2px"};
-    will-change: transform, left, top;
-    box-shadow: 0 0 14px ${color};
-  `;
-  document.body.appendChild(el);
-  return el;
-}
-
-  // Origin based on originMode:
-  // - "corners": top-left & top-right
-  // - "bottomCorners": bottom-left & bottom-right
   function getOrigin(index, total) {
     const half = total / 2;
 
@@ -119,7 +120,6 @@
       return { x, y };
     }
 
-    // default: top corners
     const isLeft = index < half;
     const x = isLeft ? 0 : window.innerWidth;
     const y = 0;
@@ -137,6 +137,7 @@
   function fireSimpleBurst() {
     const count = settings.pieceCount;
     const baseDuration = settings.durationMs || 2000;
+    const spreadScale = settings.velocitySpreadMultiplier || 1.0;
 
     for (let i = 0; i < count; i++) {
       const { x: ox, y: oy } = getOrigin(i, count);
@@ -144,7 +145,7 @@
       const el = makePiece();
       const x = ox;
       const y = oy;
-      const drift = (Math.random() - 0.5) * 320;
+      const drift = (Math.random() - 0.5) * 320 * spreadScale;
 
       const dur = baseDuration * (0.9 + Math.random() * 0.2);
 
@@ -155,11 +156,9 @@
         el.style.transition = `transform ${dur}ms linear, top ${dur}ms linear, left ${dur}ms ease-out`;
 
         if (settings.originMode === "bottomCorners") {
-          // Bottom corners: move upwards
-          el.style.top = `${-60}px`;
+          el.style.top = `${-60 - 40 * spreadScale}px`;
         } else {
-          // Top corners: fall down
-          el.style.top = `${window.innerHeight + 60}px`;
+          el.style.top = `${window.innerHeight + 60 + 40 * spreadScale}px`;
         }
 
         el.style.left = `${x + drift}px`;
@@ -179,6 +178,7 @@
     const gravityBase = 1800;
     const gravity = gravityBase / durationFactor;
 
+    const spreadScale = (settings.velocitySpreadMultiplier || 1.0) / durationFactor;
     const pieces = [];
 
     for (let i = 0; i < count; i++) {
@@ -186,17 +186,13 @@
 
       const el = makePiece();
 
-      const speedScale = 1 / durationFactor;
-
-      let vx = (Math.random() - 0.5) * 900 * speedScale;
+      let vx = (Math.random() - 0.5) * 1300 * spreadScale;
       let vy;
 
       if (settings.originMode === "bottomCorners") {
-        // From bottom corners, shoot upward
-        vy = (-600 - Math.random() * 400) * speedScale;
+        vy = (-900 - Math.random() * 550) * spreadScale;
       } else {
-        // From top corners, drop/spread down
-        vy = (50 - Math.random() * 700) * speedScale;
+        vy = (100 - Math.random() * 1000) * spreadScale;
       }
 
       pieces.push({

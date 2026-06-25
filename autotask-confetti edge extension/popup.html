@@ -63,7 +63,7 @@
 
     label {
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       justify-content: space-between;
       margin: 0.4rem 0;
       gap: 0.75rem;
@@ -74,6 +74,7 @@
       display: flex;
       flex-direction: column;
       gap: 0.15rem;
+      flex: 1;
     }
 
     .label-text span.title {
@@ -85,21 +86,23 @@
       color: #6b7280;
     }
 
-    input[type="number"] {
-      width: 5rem;
-      padding: 0.2rem 0.3rem;
-      border-radius: 4px;
-      border: 1px solid #374151;
-      background: #020617;
-      color: #e5e7eb;
-      font-size: 0.8rem;
-      text-align: right;
+    .control {
+      width: 110px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 0.2rem;
     }
 
-    input[type="number"]:focus {
-      outline: none;
-      border-color: #3b82f6;
-      box-shadow: 0 0 0 1px #3b82f6;
+    input[type="range"] {
+      width: 110px;
+      accent-color: #3b82f6;
+    }
+
+    .range-value {
+      font-size: 0.7rem;
+      color: #9ca3af;
+      min-height: 1em;
     }
 
     select {
@@ -186,7 +189,10 @@
         <span class="title">Confetti pieces</span>
         <span class="hint">Lower for subtle, higher for chaos.</span>
       </span>
-      <input id="pieceCount" type="number" min="10" max="500" step="10" />
+      <span class="control">
+        <input id="pieceCount" type="range" min="10" max="500" step="10" />
+        <span class="range-value" id="pieceCountValue"></span>
+      </span>
     </label>
 
     <label>
@@ -194,7 +200,21 @@
         <span class="title">Confetti size</span>
         <span class="hint">0.5 = smaller, 2 = larger.</span>
       </span>
-      <input id="sizeMultiplier" type="number" min="0.5" max="3" step="0.1" />
+      <span class="control">
+        <input id="sizeMultiplier" type="range" min="0.5" max="3" step="0.1" />
+        <span class="range-value" id="sizeMultiplierValue"></span>
+      </span>
+    </label>
+
+    <label>
+      <span class="label-text">
+        <span class="title">Velocity / spread</span>
+        <span class="hint">Lower = tighter, higher = wilder.</span>
+      </span>
+      <span class="control">
+        <input id="velocitySpreadMultiplier" type="range" min="0.5" max="2.5" step="0.1" />
+        <span class="range-value" id="velocitySpreadValue"></span>
+      </span>
     </label>
 
     <label>
@@ -202,7 +222,10 @@
         <span class="title">Duration (ms)</span>
         <span class="hint">Higher lasts longer (e.g. 1500–4000).</span>
       </span>
-      <input id="durationMs" type="number" min="500" max="6000" step="500" />
+      <span class="control">
+        <input id="durationMs" type="range" min="500" max="6000" step="500" />
+        <span class="range-value" id="durationMsValue"></span>
+      </span>
     </label>
 
     <label>
@@ -233,18 +256,15 @@
       <span>Enable physics mode</span>
     </div>
 
-    <button id="save">
-      Save settings
-    </button>
+    <button id="save">Save settings</button>
     <div id="status"></div>
 
     <hr />
 
-    <button id="test" class="secondary">
-      Test confetti now
-    </button>
+    <button id="test" class="secondary">Test confetti now</button>
     <div class="small" style="margin-top:0.25rem;">
       If testing doesn’t work, refresh the ticket tab and try again.
+	  (only works in autotask!)
     </div>
   </div>
 
